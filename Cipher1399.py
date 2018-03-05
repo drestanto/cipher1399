@@ -23,16 +23,30 @@ class Cipher1399 :
     def get_next_round_key(self):
         self.round_key = Cipher1399.get_round_key(self.round_key,3)
 
+    @staticmethod
+    def subs_block(block): # melakukan transposisi bit menggunakan self.s_box
+        pass
+
+    @staticmethod
+    def trans_block(block, width): # melakukan transposisi bit setiap block
+        # https://stackoverflow.com/questions/12681945/reversing-bits-of-python-integer
+        b = '{:0{width}b}'.format(block, width=width)
+        reversed_bit = int(b[::-1], 2)
+        # end of code
+        return reversed_bit
+
+    @staticmethod
+    def process_block(block):
+        # block harus berukuran 64 bit
+        transposed = Cipher1399.trans_block(block,64)
+        pass
+
     def read_block_by_block(self):
         file = open(self.filein, 'rb')
         block = file.read(8)
         while (block != ""):
             # print(block)
             block = file.read(8)
-
-    def process_block(block):
-        # block harus berukuran 64 bit
-        pass
 
     def make_s_box(self): # make sure the self.round_key is correct at this step
         # initiate s-box
@@ -75,4 +89,4 @@ ciph = Cipher1399("test","datatest.txt")
 ciph.read_block_by_block()
 ciph.get_first_round_key()
 ciph.make_s_box()
-ciph.print_s_box()
+# ciph.print_s_box()
