@@ -27,7 +27,7 @@ class Cipher1399 :
 		file = open(self.filein, 'rb')
 		block = file.read(8)
 		while (block != ""):
-			print(block)
+			# print(block)
 			block = file.read(8)
 
 	def process_block(block):
@@ -44,8 +44,22 @@ class Cipher1399 :
 			self.s_box.append(arr_baris)
 
 		# make s-box from round_key
-		print(self.s_box[0][15])
+		random.seed(self.round_key)
+		row = random.randint(0,15)
+		col = random.randint(0,15)
+		idx = 0
+		while (self.s_box[row][col] == -1):
+			self.s_box[row][col] = idx
+			idx += 1
+			row = random.randint(0,15)
+			col = random.randint(0,15)
 
+		# fill in other s_box
+		for i in range(0,16):
+			for j in range(0,16):
+				if (self.s_box[i][j] == -1):
+					self.s_box[i][j] = idx
+					idx += 1
 
 
 	def print_s_box(self):
@@ -57,8 +71,8 @@ class Cipher1399 :
 
 
 ciph = Cipher1399("test","datatest.txt")
-print(ciph.key)
+# print(ciph.key)
 ciph.read_block_by_block()
 ciph.get_first_round_key()
 ciph.make_s_box()
-# ciph.print_s_box()
+ciph.print_s_box()
