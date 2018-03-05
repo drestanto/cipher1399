@@ -23,30 +23,55 @@ class Cipher1399 :
     def get_next_round_key(self):
         self.round_key = Cipher1399.get_round_key(self.round_key,3)
 
-    @staticmethod
-    def subs_block(block): # melakukan transposisi bit menggunakan self.s_box
-        pass
+    def subs_block(self, block): # melakukan transposisi bit menggunakan self.s_box
+        substituted = ""
+        for c in block:
+            c_int = ord(c)
+            hex_row = c_int / 16
+            hex_col = c_int % 16
+            c_subs = self.s_box[hex_row][hex_col]
+            substituted += chr(c_subs)
+        return substituted
 
     @staticmethod
     def trans_block(block, width): # melakukan transposisi bit setiap block
+        # string to int / bit
+        n = 0
+        for c in block:
+            n = n*256 + ord(c)
+
         # https://stackoverflow.com/questions/12681945/reversing-bits-of-python-integer
-        b = '{:0{width}b}'.format(block, width=width)
+        b = '{:0{width}b}'.format(n, width=width)
         reversed_bit = int(b[::-1], 2)
         # end of code
-        return reversed_bit
 
-    @staticmethod
-    def process_block(block):
+        # int / bit to string
+        reversed_bit_string = ""
+        while (reversed_bit != 0):
+            c = chr(reversed_bit % 256)
+            reversed_bit /= 256
+            reversed_bit_string = c + reversed_bit_string
+
+        return reversed_bit_string
+
+    def process_block(self, block):
         # block harus berukuran 64 bit
-        transposed = Cipher1399.trans_block(block,64)
-        pass
+        substituted = self.subs_block(block)
+        transposed = Cipher1399.trans_block(substituted,64)
+        return transposed
 
     def read_block_by_block(self):
+        cipher = ""
         file = open(self.filein, 'rb')
         block = file.read(8)
         while (block != ""):
-            # print(block)
+            if (len(block) != 8):
+                jumlah_tambahan_spasi = 8-len(block)
+                for i in range(0,jumlah_tambahan_spasi):
+                    block += " "
+            cipher += self.process_block(block)
             block = file.read(8)
+        return cipher
 
     def make_s_box(self): # make sure the self.round_key is correct at this step
         # initiate s-box
@@ -86,7 +111,7 @@ class Cipher1399 :
 
 ciph = Cipher1399("test","datatest.txt")
 # print(ciph.key)
-ciph.read_block_by_block()
 ciph.get_first_round_key()
 ciph.make_s_box()
 # ciph.print_s_box()
+print(ciph.read_block_by_block())
