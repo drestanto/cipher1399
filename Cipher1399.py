@@ -24,11 +24,15 @@ class Cipher1399 :
     def get_list_of_key(key, length):
         # length must be > 1
         round_keys = []
-        key = Cipher1399.get_round_key(self.key,3)
+        key = Cipher1399.get_round_key(key,3)
         round_keys.append(key)
         idx = 1
-        while (idx > length):
+        while (idx < length):
             key = Cipher1399.get_round_key(key,3)
+            round_keys.append(key)
+            idx += 1
+
+        return round_keys
 
     @staticmethod
     def get_round_key(key, length):
@@ -137,3 +141,4 @@ ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
 # print(ciph.read_block_by_block())
 print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
 print(Cipher1399.get_number_of_iter("pada suatu hari"))
+print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro",Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro")))
