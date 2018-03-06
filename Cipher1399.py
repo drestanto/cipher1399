@@ -10,6 +10,17 @@ class Cipher1399 :
         self.s_box = []
 
     @staticmethod
+    def get_number_of_iter(key):
+        tot = 0
+        for c in key:
+            tot += ord(c)
+
+        num_iter = tot % len(key) + 1
+        return num_iter
+
+    # @staticmethod
+    # def 
+    @staticmethod
     def get_round_key(key, length):
         random.seed(key)
         round_key = ""
@@ -100,7 +111,6 @@ class Cipher1399 :
                     self.s_box[i][j] = idx
                     idx += 1
 
-
     def print_s_box(self):
         for arr in self.s_box:
             for elem in arr:
@@ -114,4 +124,6 @@ ciph = Cipher1399("test","datatest.txt")
 ciph.get_first_round_key()
 ciph.make_s_box()
 # ciph.print_s_box()
-print(ciph.read_block_by_block())
+# print(ciph.read_block_by_block())
+print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
+print(Cipher1399.get_number_of_iter("pada suatu hari"))
