@@ -8,6 +8,8 @@ class Cipher1399 :
         self.round_key = ""
         self.filein = filein
         self.s_box = []
+        self.number_of_iter = Cipher1399.get_number_of_iter(self.key)
+
 
     @staticmethod
     def get_number_of_iter(key):
@@ -18,8 +20,16 @@ class Cipher1399 :
         num_iter = tot % len(key) + 1
         return num_iter
 
-    # @staticmethod
-    # def 
+    @staticmethod
+    def get_list_of_key(key, length):
+        # length must be > 1
+        round_keys = []
+        key = Cipher1399.get_round_key(self.key,3)
+        round_keys.append(key)
+        idx = 1
+        while (idx > length):
+            key = Cipher1399.get_round_key(key,3)
+
     @staticmethod
     def get_round_key(key, length):
         random.seed(key)
@@ -28,11 +38,11 @@ class Cipher1399 :
             round_key += str(chr(random.randint(0,255)))
         return round_key
 
-    def get_first_round_key(self):
-        self.round_key = Cipher1399.get_round_key(self.key,3)
+    # def get_first_round_key(self):
+    #     self.round_key = Cipher1399.get_round_key(self.key,3)
 
-    def get_next_round_key(self):
-        self.round_key = Cipher1399.get_round_key(self.round_key,3)
+    # def get_next_round_key(self):
+    #     self.round_key = Cipher1399.get_round_key(self.round_key,3)
 
     def subs_block(self, block): # melakukan transposisi bit menggunakan self.s_box
         substituted = ""
@@ -84,7 +94,7 @@ class Cipher1399 :
             block = file.read(8)
         return cipher
 
-    def make_s_box(self): # make sure the self.round_key is correct at this step
+    def make_s_box(self, key): # make sure the self.round_key is correct at this step
         # initiate s-box
         s_box_size = 16
         for i in range(0,s_box_size):
@@ -94,7 +104,7 @@ class Cipher1399 :
             self.s_box.append(arr_baris)
 
         # make s-box from round_key
-        random.seed(self.round_key)
+        random.seed(key)
         row = random.randint(0,15)
         col = random.randint(0,15)
         idx = 0
@@ -121,8 +131,8 @@ class Cipher1399 :
 
 ciph = Cipher1399("test","datatest.txt")
 # print(ciph.key)
-ciph.get_first_round_key()
-ciph.make_s_box()
+# ciph.get_first_round_key()
+ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
 # ciph.print_s_box()
 # print(ciph.read_block_by_block())
 print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
