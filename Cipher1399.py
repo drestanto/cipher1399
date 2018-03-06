@@ -9,6 +9,7 @@ class Cipher1399 :
         self.filein = filein
         self.s_box = []
         self.number_of_iter = Cipher1399.get_number_of_iter(self.key)
+        self.list_of_round_key = Cipher1399.get_list_of_key(self.key)
 
 
     @staticmethod
@@ -21,8 +22,8 @@ class Cipher1399 :
         return num_iter
 
     @staticmethod
-    def get_list_of_key(key, length):
-        # length must be > 1
+    def get_list_of_key(key):
+        length = Cipher1399.get_number_of_iter(key)
         round_keys = []
         key = Cipher1399.get_round_key(key,3)
         round_keys.append(key)
@@ -141,4 +142,4 @@ ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
 # print(ciph.read_block_by_block())
 print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
 print(Cipher1399.get_number_of_iter("pada suatu hari"))
-print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro",Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro")))
+print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
