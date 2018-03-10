@@ -11,7 +11,6 @@ class Cipher1399 :
         self.number_of_iter = Cipher1399.get_number_of_iter(self.key)
         self.list_of_round_key = Cipher1399.get_list_of_key(self.key)
 
-
     @staticmethod
     def get_number_of_iter(key):
         tot = 0
