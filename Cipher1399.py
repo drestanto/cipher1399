@@ -6,8 +6,8 @@ class Cipher1399 :
     def __init__(self, key, filein):
         self.key = key
         self.filein = filein
-        self.round_key = "" # kayaknya ga bakal kepake
-        self.s_box = [] # kayaknya ga bakal kepake
+        # self.round_key = "" # kayaknya ga bakal kepake
+        # self.s_box = [] # kayaknya ga bakal kepake
         self.number_of_iter = Cipher1399.get_number_of_iter(self.key)
         self.list_of_round_key = Cipher1399.get_list_of_key(self.key)
 
@@ -168,7 +168,7 @@ class Cipher1399 :
     #         block = file.read(8)
     #     return cipher
 
-    def encrypt_string(self, text, round):
+    def encrypt_string_ecb(self, text, round):
         # print(len(text))
         test = ""
         i = 0
@@ -226,7 +226,7 @@ class Cipher1399 :
             return left + center + right # basis
         else: # rekurens
             new_left = right
-            new_right = Cipher1399.sxor(left, self.encrypt_string(right, round))
+            new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
             return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1)
 
     def feistel_encrypt(self, text):
@@ -239,7 +239,7 @@ class Cipher1399 :
             return left + center + right # basis
         else: # rekurens
             new_right = left
-            new_left = Cipher1399.sxor(right, self.encrypt_string(left, round))
+            new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
             return self.feistel_decrypt_recursive(new_left, center, new_right, round - 1)
 
     def feistel_decrypt(self, text):
