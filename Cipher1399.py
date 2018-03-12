@@ -219,31 +219,33 @@ class Cipher1399 :
         return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(s1,s2))
     # end of code
 
-    def feistel_encrypt_recursive(self, left, center, right, round):
+    def feistel_encrypt_recursive(self, left, center, right, round, type):
         # initiate round by zero
         # source = https://en.wikipedia.org/wiki/Feistel_cipher
         if (round > self.number_of_iter):
             return left + center + right # basis
         else: # rekurens
             new_left = right
-            new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
-            return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1)
+            if (type == "ecb"):
+                new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
+            return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1, type)
 
-    def feistel_encrypt(self, text):
-        return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0)
+    def feistel_encrypt(self, text, type):
+        return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0, type)
 
-    def feistel_decrypt_recursive(self, left, center, right, round):
+    def feistel_decrypt_recursive(self, left, center, right, round, type):
         # initiate round by number_of_iter
         # source = https://en.wikipedia.org/wiki/Feistel_cipher
         if (round == -1):
             return left + center + right # basis
         else: # rekurens
             new_right = left
-            new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
-            return self.feistel_decrypt_recursive(new_left, center, new_right, round - 1)
+            if (type == "ecb"):
+                new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
+            return self.feistel_decrypt_recursive(new_left, center, new_right, round - 1, type)
 
-    def feistel_decrypt(self, text):
-        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), self.number_of_iter)
+    def feistel_decrypt(self, text, type):
+        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), self.number_of_iter, type)
 
 
 ciph = Cipher1399("test sdjfhs dsbjfasgyud fsadjgfasyudf jyaestawe sdhju","datatest.txt")
@@ -254,6 +256,6 @@ print(ciph.number_of_iter)
 # print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 print("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
-print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
-simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
-print(ciph.feistel_decrypt(simpen))
+print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb"))
+simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb")
+print(ciph.feistel_decrypt(simpen, "ecb"))
