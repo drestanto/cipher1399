@@ -185,8 +185,21 @@ class Cipher1399 :
     def feistel_encrypt(self, text):
         return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_right(text), 0)
 
+    def feistel_decrypt_recursive(self, left, right, round):
+        # initiate round by zero
+        # source = https://en.wikipedia.org/wiki/Feistel_cipher
+        if (round > self.number_of_iter):
+            return left + right # basis
+        else: # rekurens
+            new_right = left
+            new_left = Cipher1399.sxor(right, self.encrypt_string(left))
+            return self.feistel_decrypt_recursive(new_left, new_right, round + 1)
 
-ciph = Cipher1399("testaaaaaaaaaaaaaaa","datatest.txt")
+    def feistel_decrypt(self, text):
+        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_right(text), 0)
+
+
+ciph = Cipher1399("testaaaaaaaaaaaaa","datatest.txt")
 # print(ciph.key)
 # ciph.get_first_round_key()
 ciph.make_s_box(Cipher1399.get_round_key(ciph.key, 3))
@@ -197,7 +210,8 @@ ciph.make_s_box(Cipher1399.get_round_key(ciph.key, 3))
 # print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
 print(ciph.number_of_iter)
 
-print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
-print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
+# print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
+# print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
 print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
-
+simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq")
+print(ciph.feistel_decrypt(simpen))
