@@ -5,11 +5,18 @@ class Cipher1399 :
 
     def __init__(self, key, filein):
         self.key = key
-        self.round_key = ""
         self.filein = filein
-        self.s_box = []
+        self.round_key = "" # kayaknya ga bakal kepake
+        self.s_box = [] # kayaknya ga bakal kepake
         self.number_of_iter = Cipher1399.get_number_of_iter(self.key)
         self.list_of_round_key = Cipher1399.get_list_of_key(self.key)
+
+    def read_file_as_string(self):
+        # https://prefetch.net/blog/2012/01/30/reading-a-file-into-a-python-string/
+        f = open(self.filein, "r")
+        data = f.read()
+        # end of code
+        return data
 
     @staticmethod
     def get_number_of_iter(key):
@@ -21,20 +28,6 @@ class Cipher1399 :
         return num_iter
 
     @staticmethod
-    def get_list_of_key(key):
-        length = Cipher1399.get_number_of_iter(key)
-        round_keys = []
-        key = Cipher1399.get_round_key(key,3)
-        round_keys.append(key)
-        idx = 1
-        while (idx < length):
-            key = Cipher1399.get_round_key(key,3)
-            round_keys.append(key)
-            idx += 1
-
-        return round_keys
-
-    @staticmethod
     def get_round_key(key, length):
         random.seed(key)
         round_key = ""
@@ -42,19 +35,98 @@ class Cipher1399 :
             round_key += str(chr(random.randint(0,255)))
         return round_key
 
+    @staticmethod
+    def get_list_of_key(key):
+        length = Cipher1399.get_number_of_iter(key)
+        round_keys = []
+        key = Cipher1399.get_round_key(key,3)
+        round_keys.append(key)
+        idx = 0
+        while (idx < length):
+            key = Cipher1399.get_round_key(key,3)
+            round_keys.append(key)
+            idx += 1
+
+        return round_keys
+
     # def get_first_round_key(self):
     #     self.round_key = Cipher1399.get_round_key(self.key,3)
 
     # def get_next_round_key(self):
     #     self.round_key = Cipher1399.get_round_key(self.round_key,3)
 
-    def subs_block(self, block): # melakukan transposisi bit menggunakan self.s_box
+    def make_s_box(self, key):
+        # initiate s-box
+        s_box_size = 16
+        for i in range(0,s_box_size):
+            arr_baris = []
+            for j in range(0,s_box_size):
+                arr_baris.append(-1)
+            self.s_box.append(arr_baris)
+
+        # make s-box from key
+        random.seed(key)
+        row = random.randint(0,15)
+        col = random.randint(0,15)
+        idx = 0
+        while (self.s_box[row][col] == -1):
+            self.s_box[row][col] = idx
+            idx += 1
+            row = random.randint(0,15)
+            col = random.randint(0,15)
+
+        # fill in other s_box
+        for i in range(0,16):
+            for j in range(0,16):
+                if (self.s_box[i][j] == -1):
+                    self.s_box[i][j] = idx
+                    idx += 1
+
+    def print_s_box(self):
+        for arr in self.s_box:
+            for elem in arr:
+                sys.stdout.write(format(elem,'02x'))
+                sys.stdout.write(' ')
+            print("")
+
+    @staticmethod
+    def generate_s_box(key): # return an s-box
+        # initiate s-box
+        s_box_size = 16
+        new_s_box = []
+        for i in range(0,s_box_size):
+            arr_baris = []
+            for j in range(0,s_box_size):
+                arr_baris.append(-1)
+            new_s_box.append(arr_baris)
+
+        random.seed(key)
+        row = random.randint(0,15)
+        col = random.randint(0,15)
+        idx = 0
+        while (new_s_box[row][col] == -1):
+            new_s_box[row][col] = idx
+            idx += 1
+            row = random.randint(0,15)
+            col = random.randint(0,15)
+
+        # fill in other s_box
+        for i in range(0,16):
+            for j in range(0,16):
+                if (new_s_box[i][j] == -1):
+                    new_s_box[i][j] = idx
+                    idx += 1
+
+        return new_s_box
+
+    @staticmethod
+    def subs_block(s_box, block): # melakukan transposisi bit menggunakan self.s_box
         substituted = ""
         for c in block:
             c_int = ord(c)
             hex_row = c_int / 16
             hex_col = c_int % 16
-            c_subs = self.s_box[hex_row][hex_col]
+            c_subs = s_box[hex_row][hex_col]
             substituted += chr(c_subs)
         return substituted
 
@@ -79,77 +151,38 @@ class Cipher1399 :
 
         return reversed_bit_string
 
-    def process_block(self, block):
+    def process_block(self, block, round):
         # block harus berukuran 64 bit
-        substituted = self.subs_block(block)
+        s_box = Cipher1399.generate_s_box(self.list_of_round_key[round])
+        substituted = Cipher1399.subs_block(s_box, block)
         transposed = Cipher1399.trans_block(substituted,8*len(block))
         return transposed
 
-    def read_block_by_block(self):
-        cipher = ""
-        file = open(self.filein, 'rb')
-        block = file.read(8)
-        while (block != ""):
-            cipher += self.process_block(block)
-            block = file.read(8)
-        return cipher
+    # ga kepake
+    # def read_block_by_block(self):
+    #     cipher = ""
+    #     file = open(self.filein, 'rb')
+    #     block = file.read(8)
+    #     while (block != ""):
+    #         cipher += self.process_block(block)
+    #         block = file.read(8)
+    #     return cipher
 
-    def read_file_as_string(self):
-        # https://prefetch.net/blog/2012/01/30/reading-a-file-into-a-python-string/
-        f = open(self.filein, "r")
-        data = f.read()
-        # end of code
-        return data
-
-    def encrypt_string(self, text):
+    def encrypt_string(self, text, round):
         # print(len(text))
         test = ""
         i = 0
         block = ""
         for c in text:
             if (i == 8):
-                test += self.process_block(block)
+                test += self.process_block(block, round)
                 block = ""
                 i = 0
             block += c
             i += 1
-        test += self.process_block(block)
+        test += self.process_block(block, round)
         # print(len(test))
         return test
-
-    def make_s_box(self, key): # make sure the self.round_key is correct at this step
-        # initiate s-box
-        s_box_size = 16
-        for i in range(0,s_box_size):
-            arr_baris = []
-            for j in range(0,s_box_size):
-                arr_baris.append(-1)
-            self.s_box.append(arr_baris)
-
-        # make s-box from round_key
-        random.seed(key)
-        row = random.randint(0,15)
-        col = random.randint(0,15)
-        idx = 0
-        while (self.s_box[row][col] == -1):
-            self.s_box[row][col] = idx
-            idx += 1
-            row = random.randint(0,15)
-            col = random.randint(0,15)
-
-        # fill in other s_box
-        for i in range(0,16):
-            for j in range(0,16):
-                if (self.s_box[i][j] == -1):
-                    self.s_box[i][j] = idx
-                    idx += 1
-
-    def print_s_box(self):
-        for arr in self.s_box:
-            for elem in arr:
-                sys.stdout.write(format(elem,'02x'))
-                sys.stdout.write(' ')
-            print("")
 
     @staticmethod
     def get_left(text):
@@ -193,40 +226,34 @@ class Cipher1399 :
             return left + center + right # basis
         else: # rekurens
             new_left = right
-            new_right = Cipher1399.sxor(left, self.encrypt_string(right))
+            new_right = Cipher1399.sxor(left, self.encrypt_string(right, round))
             return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1)
 
     def feistel_encrypt(self, text):
         return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0)
 
     def feistel_decrypt_recursive(self, left, center, right, round):
-        # initiate round by zero
+        # initiate round by number_of_iter
         # source = https://en.wikipedia.org/wiki/Feistel_cipher
-        if (round > self.number_of_iter):
+        if (round == -1):
             return left + center + right # basis
         else: # rekurens
             new_right = left
-            new_left = Cipher1399.sxor(right, self.encrypt_string(left))
-            return self.feistel_decrypt_recursive(new_left, center, new_right, round + 1)
+            new_left = Cipher1399.sxor(right, self.encrypt_string(left, round))
+            return self.feistel_decrypt_recursive(new_left, center, new_right, round - 1)
 
     def feistel_decrypt(self, text):
-        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0)
+        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), self.number_of_iter)
 
 
-ciph = Cipher1399("testaaaaaaaaaaaaa","datatest.txt")
-# print(ciph.key)
-# ciph.get_first_round_key()
-ciph.make_s_box(Cipher1399.get_round_key(ciph.key, 3))
-# ciph.print_s_box()
-# print(ciph.read_block_by_block())
-# print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
-# print(Cipher1399.get_number_of_iter("pada suatu hari"))
-# print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
+ciph = Cipher1399("test sdjfhs dsbjfasgyud fsadjgfasyudf jyaestawe sdhju","datatest.txt")
 print(ciph.number_of_iter)
+# print(ciph.list_of_round_key)
 
 # print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
+print("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
 print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
 print(ciph.feistel_decrypt(simpen))
