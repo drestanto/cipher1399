@@ -153,17 +153,31 @@ class Cipher1399 :
 
     @staticmethod
     def get_left(text):
+        # if it's odd, will get the left of the center excluding the center byte
         length = len(text) / 2
         return text[:length]
 
     @staticmethod
     def get_right(text):
+        # if it's odd, will get the right of the center excluding the center
         length = len(text) / 2
-        return text[length:]
+        if (len(text) % 2 == 0):
+            return text[length:]
+        else:
+            return text[length + 1:]
+
+    @staticmethod
+    def get_center(text):
+        # if it's odd, will return the center, if it's even, will return empty string
+        length = len(text) / 2
+        if (len(text) % 2 == 0):
+            return ""
+        else:
+            return text[length:-length]
 
     @staticmethod
     # https://stackoverflow.com/questions/2612720/how-to-do-bitwise-exclusive-or-of-two-strings-in-python
-    def sxor(s1,s2):    
+    def sxor(s1,s2): # string xor
         # convert strings to a list of character pair tuples
         # go through each tuple, converting them to ASCII code (ord)
         # perform exclusive or on the ASCII code
@@ -172,31 +186,31 @@ class Cipher1399 :
         return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(s1,s2))
     # end of code
 
-    def feistel_encrypt_recursive(self, left, right, round):
+    def feistel_encrypt_recursive(self, left, center, right, round):
         # initiate round by zero
         # source = https://en.wikipedia.org/wiki/Feistel_cipher
         if (round > self.number_of_iter):
-            return left + right # basis
+            return left + center + right # basis
         else: # rekurens
             new_left = right
             new_right = Cipher1399.sxor(left, self.encrypt_string(right))
-            return self.feistel_encrypt_recursive(new_left, new_right, round + 1)
+            return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1)
 
     def feistel_encrypt(self, text):
-        return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_right(text), 0)
+        return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0)
 
-    def feistel_decrypt_recursive(self, left, right, round):
+    def feistel_decrypt_recursive(self, left, center, right, round):
         # initiate round by zero
         # source = https://en.wikipedia.org/wiki/Feistel_cipher
         if (round > self.number_of_iter):
-            return left + right # basis
+            return left + center + right # basis
         else: # rekurens
             new_right = left
             new_left = Cipher1399.sxor(right, self.encrypt_string(left))
-            return self.feistel_decrypt_recursive(new_left, new_right, round + 1)
+            return self.feistel_decrypt_recursive(new_left, center, new_right, round + 1)
 
     def feistel_decrypt(self, text):
-        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_right(text), 0)
+        return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0)
 
 
 ciph = Cipher1399("testaaaaaaaaaaaaa","datatest.txt")
@@ -210,8 +224,9 @@ ciph.make_s_box(Cipher1399.get_round_key(ciph.key, 3))
 # print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
 print(ciph.number_of_iter)
 
-# print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
-# print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
-print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
-simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq")
+# print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
+# print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
+# print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
+print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
+simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
 print(ciph.feistel_decrypt(simpen))
