@@ -90,10 +90,6 @@ class Cipher1399 :
         file = open(self.filein, 'rb')
         block = file.read(8)
         while (block != ""):
-            if (len(block) != 8):
-                jumlah_tambahan_spasi = 8-len(block)
-                for i in range(0,jumlah_tambahan_spasi):
-                    block += " "
             cipher += self.process_block(block)
             block = file.read(8)
         return cipher
@@ -155,15 +151,53 @@ class Cipher1399 :
                 sys.stdout.write(' ')
             print("")
 
+    @staticmethod
+    def get_left(text):
+        length = len(text) / 2
+        return text[:length]
 
-ciph = Cipher1399("test","datatest.txt")
+    @staticmethod
+    def get_right(text):
+        length = len(text) / 2
+        return text[length:]
+
+    @staticmethod
+    # https://stackoverflow.com/questions/2612720/how-to-do-bitwise-exclusive-or-of-two-strings-in-python
+    def sxor(s1,s2):    
+        # convert strings to a list of character pair tuples
+        # go through each tuple, converting them to ASCII code (ord)
+        # perform exclusive or on the ASCII code
+        # then convert the result back to ASCII (chr)
+        # merge the resulting array of characters as a string
+        return ''.join(chr(ord(a) ^ ord(b)) for a,b in zip(s1,s2))
+    # end of code
+
+    def feistel_encrypt_recursive(self, left, right, round):
+        # initiate round by zero
+        # source = https://en.wikipedia.org/wiki/Feistel_cipher
+        if (round > self.number_of_iter):
+            return left + right # basis
+        else: # rekurens
+            new_left = right
+            new_right = Cipher1399.sxor(left, self.encrypt_string(right))
+            return self.feistel_encrypt_recursive(new_left, new_right, round + 1)
+
+    def feistel_encrypt(self, text):
+        return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_right(text), 0)
+
+
+ciph = Cipher1399("testaaaaaaaaaaaaaaa","datatest.txt")
 # print(ciph.key)
 # ciph.get_first_round_key()
-ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
+ciph.make_s_box(Cipher1399.get_round_key(ciph.key, 3))
 # ciph.print_s_box()
 # print(ciph.read_block_by_block())
 # print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
 # print(Cipher1399.get_number_of_iter("pada suatu hari"))
 # print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
-print(ciph.encrypt_string("qwertyuiopasdfghjklzxcvbnm"))
-print(ciph.read_file_as_string())
+print(ciph.number_of_iter)
+
+print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
+print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
+print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrewq"))
+
