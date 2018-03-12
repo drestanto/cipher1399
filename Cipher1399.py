@@ -82,7 +82,7 @@ class Cipher1399 :
     def process_block(self, block):
         # block harus berukuran 64 bit
         substituted = self.subs_block(block)
-        transposed = Cipher1399.trans_block(substituted,64)
+        transposed = Cipher1399.trans_block(substituted,8*len(block))
         return transposed
 
     def read_block_by_block(self):
@@ -97,6 +97,22 @@ class Cipher1399 :
             cipher += self.process_block(block)
             block = file.read(8)
         return cipher
+
+    def encrypt_string(self, text):
+        # print(len(text))
+        test = ""
+        i = 0
+        block = ""
+        for c in text:
+            if (i == 8):
+                test += self.process_block(block)
+                block = ""
+                i = 0
+            block += c
+            i += 1
+        test += self.process_block(block)
+        # print(len(test))
+        return test
 
     def make_s_box(self, key): # make sure the self.round_key is correct at this step
         # initiate s-box
@@ -139,6 +155,7 @@ ciph = Cipher1399("test","datatest.txt")
 ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
 # ciph.print_s_box()
 # print(ciph.read_block_by_block())
-print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
-print(Cipher1399.get_number_of_iter("pada suatu hari"))
-print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
+# print(Cipher1399.get_number_of_iter("Drestanto Muhammad Dyasputro"))
+# print(Cipher1399.get_number_of_iter("pada suatu hari"))
+# print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
+print(ciph.encrypt_string("qwertyuiopasdfghjklzxcvbnm"))
