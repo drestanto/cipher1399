@@ -98,6 +98,13 @@ class Cipher1399 :
             block = file.read(8)
         return cipher
 
+    def read_file_as_string(self):
+        # https://prefetch.net/blog/2012/01/30/reading-a-file-into-a-python-string/
+        f = open(self.filein, "r")
+        data = f.read()
+        # end of code
+        return data
+
     def encrypt_string(self, text):
         # print(len(text))
         test = ""
@@ -159,3 +166,4 @@ ciph.make_s_box(Cipher1399.get_round_key(ciph.key,3))
 # print(Cipher1399.get_number_of_iter("pada suatu hari"))
 # print(Cipher1399.get_list_of_key("Drestanto Muhammad Dyasputro"))
 print(ciph.encrypt_string("qwertyuiopasdfghjklzxcvbnm"))
+print(ciph.read_file_as_string())
