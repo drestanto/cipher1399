@@ -228,7 +228,13 @@ class Cipher1399 :
             new_left = right
             if (type == "ecb"):
                 new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
-            return self.feistel_encrypt_recursive(new_left, center, new_right, round + 1, type)
+            elif type == "cbc":
+            	if round == 0:
+            		new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
+            	else:
+            		new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(self.prev_right, round))
+            	self.prev_right = new_right
+            return self.feistel_encrypt_recursive(right, center, new_right, round + 1, type)
 
     def feistel_encrypt(self, text, type):
         return self.feistel_encrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), 0, type)
@@ -239,10 +245,21 @@ class Cipher1399 :
         if (round == -1):
             return left + center + right # basis
         else: # rekurens
-            new_right = left
+            # new_right = left
             if (type == "ecb"):
                 new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
-            return self.feistel_decrypt_recursive(new_left, center, new_right, round - 1, type)
+            elif type == "cbc":
+            	if round != 0:
+            		new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
+            	else:
+            		new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(self.prev_left, round))
+            	self.prev_left = new_left
+            elif type == "cfb":
+            	pass
+            elif type == "ofb":
+            	pass
+
+            return self.feistel_decrypt_recursive(new_left, center, left, round - 1, type)
 
     def feistel_decrypt(self, text, type):
         return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), self.number_of_iter, type)
@@ -256,6 +273,6 @@ print(ciph.number_of_iter)
 # print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 print("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
-print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb"))
-simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb")
-print(ciph.feistel_decrypt(simpen, "ecb"))
+print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "cbc"))
+simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "cbc")
+print(ciph.feistel_decrypt(simpen, "cbc"))
