@@ -264,6 +264,41 @@ class Cipher1399 :
         # print(len(test))
         return test
 
+    def encrypt_string_counter(self, text, round):
+        # print(len(text))
+        random.seed(self.key)
+        counter = ""
+        for i in range(0,8): # 8 = ukuran block
+            counter += str(chr(random.randint(0,255)))
+
+        test = ""
+        i = 0
+        block = ""
+        for c in text:
+            if (i == 8):
+                test += Cipher1399.sxor(block, self.process_block(counter, round))
+                block = ""
+                i = 0
+                # advance counter
+                n = 0
+                for new_c in counter:
+                    n = n*256 + ord(new_c)
+                n += 1
+
+                new_counter = ""
+                while (n != 0):
+                    c = chr(n % 256)
+                    n /= 256
+                    new_counter = c + new_counter
+                counter = new_counter
+                # end of advance counter
+
+            block += c
+            i += 1
+        test += self.process_block(block, round)
+        # print(len(test))
+        return test
+
     @staticmethod
     def get_left(text):
         # if it's odd, will get the left of the center excluding the center byte
@@ -314,6 +349,9 @@ class Cipher1399 :
                 new_right = Cipher1399.sxor(left, self.encrypt_string_cfb(right, round))
             elif type == "ofb":
                 new_right = Cipher1399.sxor(left, self.encrypt_string_ofb(right, round))
+            elif type == "counter":
+                new_right = Cipher1399.sxor(left, self.encrypt_string_counter(right, round))
+
             return self.feistel_encrypt_recursive(right, center, new_right, round + 1, type)
 
     def feistel_encrypt(self, text, type):
@@ -334,6 +372,8 @@ class Cipher1399 :
             	new_left = Cipher1399.sxor(right, self.encrypt_string_cfb(left, round))
             elif type == "ofb":
             	new_left = Cipher1399.sxor(right, self.encrypt_string_ofb(left, round))
+            elif type == "counter":
+                new_left = Cipher1399.sxor(right, self.encrypt_string_counter(left, round))
 
             return self.feistel_decrypt_recursive(new_left, center, left, round - 1, type)
 
@@ -363,9 +403,9 @@ plain1 = "qwertyuiopasdfghjklzxcvbnm qazwsxedcrfvtgbyhnujmikolp mnbvcxzlkjhgfdsa
 print(plain)
 # Cipher1399.print_as_hex(plain)
 # print(ciph.feistel_encrypt(plain, "ecb"))
-simpen = ciph.feistel_encrypt(plain, "ofb")
+simpen = ciph.feistel_encrypt(plain, "counter")
 print("")
 print("")
 # Cipher1399.print_as_hex(simpen)
 print(simpen)
-print(ciph.feistel_decrypt(simpen, "ofb"))
+print(ciph.feistel_decrypt(simpen, "counter"))
