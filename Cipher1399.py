@@ -206,6 +206,64 @@ class Cipher1399 :
         # print(len(test))
         return test
 
+    def encrypt_string_cfb(self, text, round):
+        # print(len(text))
+        test = ""
+        i = 0
+        block = ""
+        for c in text:
+            if (i == 8):
+                # cfb 8 bit, sehingga diproses perbyte
+                msb = 0 # most significant bit
+                hasil_enkripsi = ""
+                for sub_block in block:
+                    hasil = self.process_block(Cipher1399.sxor(block, chr(msb)), round)
+                    # calculate msb
+                    if (hasil != ""): # debug aja nih, ngasal
+                        if (ord(hasil) >= 128):
+                            msb = 1
+                        else:
+                            msb = 0
+                    hasil_enkripsi += hasil
+                test += hasil_enkripsi
+                block = ""
+                i = 0
+            block += c
+            i += 1
+        test += self.process_block(block, round)
+        # print(len(test))
+        return test
+
+    def encrypt_string_ofb(self, text, round):
+        # print(len(text))
+        test = ""
+        i = 0
+        block = ""
+        for c in text:
+            if (i == 8):
+                # cfb 8 bit, sehingga diproses perbyte
+                msb = 0 # most significant bit
+                hasil_sebelumnya = ""
+                hasil_enkripsi = ""
+                for sub_block in block:
+                    hasil = self.process_block(Cipher1399.sxor(block, chr(msb)), round)
+                    # calculate msb
+                    if (hasil_sebelumnya != ""): # debug aja nih, ngasal
+                        if (ord(hasil_sebelumnya) >= 128):
+                            msb = 1
+                        else:
+                            msb = 0
+                    hasil_sebelumnya = hasil
+                    hasil_enkripsi += hasil
+                test += hasil_enkripsi
+                block = ""
+                i = 0
+            block += c
+            i += 1
+        test += self.process_block(block, round)
+        # print(len(test))
+        return test
+
     @staticmethod
     def get_left(text):
         # if it's odd, will get the left of the center excluding the center byte
@@ -252,6 +310,10 @@ class Cipher1399 :
                 new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
             elif type == "cbc":
             	new_right = Cipher1399.sxor(left, self.encrypt_string_cbc(right, round))
+            elif type == "cfb":
+                new_right = Cipher1399.sxor(left, self.encrypt_string_cfb(right, round))
+            elif type == "ofb":
+                new_right = Cipher1399.sxor(left, self.encrypt_string_ofb(right, round))
             return self.feistel_encrypt_recursive(right, center, new_right, round + 1, type)
 
     def feistel_encrypt(self, text, type):
@@ -269,9 +331,9 @@ class Cipher1399 :
             elif type == "cbc":
             	new_left = Cipher1399.sxor(right, self.encrypt_string_cbc(left, round))
             elif type == "cfb":
-            	pass
+            	new_left = Cipher1399.sxor(right, self.encrypt_string_cfb(left, round))
             elif type == "ofb":
-            	pass
+            	new_left = Cipher1399.sxor(right, self.encrypt_string_ofb(left, round))
 
             return self.feistel_decrypt_recursive(new_left, center, left, round - 1, type)
 
@@ -301,9 +363,9 @@ plain1 = "qwertyuiopasdfghjklzxcvbnm qazwsxedcrfvtgbyhnujmikolp mnbvcxzlkjhgfdsa
 print(plain)
 # Cipher1399.print_as_hex(plain)
 # print(ciph.feistel_encrypt(plain, "ecb"))
-simpen = ciph.feistel_encrypt(plain, "cbc")
+simpen = ciph.feistel_encrypt(plain, "ofb")
 print("")
 print("")
 # Cipher1399.print_as_hex(simpen)
 print(simpen)
-print(ciph.feistel_decrypt(simpen, "cbc"))
+print(ciph.feistel_decrypt(simpen, "ofb"))
