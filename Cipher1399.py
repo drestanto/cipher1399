@@ -247,15 +247,32 @@ class Cipher1399 :
     def feistel_decrypt(self, text, type):
         return self.feistel_decrypt_recursive(Cipher1399.get_left(text), Cipher1399.get_center(text), Cipher1399.get_right(text), self.number_of_iter, type)
 
+    @staticmethod
+    def print_as_hex(text):
+        for char in text:
+            int_format = ord(char)
+            sys.stdout.write(format(int_format,'02x'))
+            sys.stdout.write(" ")
 
-ciph = Cipher1399("test sdjfhs dsbjfasgyud fsadjgfasyudf jyaestawe sdhju","datatest.txt")
+
+
+key = "ITB = Institut Teknologi Bandung"
+ciph = Cipher1399(key,"datatest.txt")
 print(ciph.number_of_iter)
 # print(ciph.list_of_round_key)
 
 # print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
-print("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew")
-print(ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb"))
-simpen = ciph.feistel_encrypt("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew", "ecb")
-print(ciph.feistel_decrypt(simpen, "ecb"))
+plain = "Red: These walls are funny. First you hate 'em, then you get used to 'em. Enough time passes, you get so you depend on them. That's institutionalized.\nHeywood: Shit. I could never get like that.\nErnie: Oh yeah? Say that when you been here as long as Brooks has.\nRed: Goddamn right. They send you here for life, and that's exactly what they take. The part that counts, anyway"
+plain1 = "qwertyuiopasdfghjklzxcvbnm qazwsxedcrfvtgbyhnujmikolp mnbvcxzlkjhgfdsapoiuytrewq abcdefghijklmnopqrstuvwxyz"
+print((len(plain)-3)/26)
+print(plain)
+# Cipher1399.print_as_hex(plain)
+# print(ciph.feistel_encrypt(plain, "ecb"))
+simpen = ciph.feistel_encrypt(plain, "ecb")
+print("")
+print("")
+# Cipher1399.print_as_hex(simpen)
+print(simpen)
+# print(ciph.feistel_decrypt(simpen, "ecb"))
