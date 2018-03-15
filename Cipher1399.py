@@ -184,6 +184,28 @@ class Cipher1399 :
         # print(len(test))
         return test
 
+    def encrypt_string_cbc(self, text, round):
+        # print(len(text))
+        test = ""
+        i = 0
+        prev_ciph = ""
+        block = ""
+        for c in text:
+            if (i == 8):
+                if (prev_ciph == ""):
+                    test += self.process_block(block, round)
+                    prev_ciph = self.process_block(block, round)
+                else:
+                    test += self.process_block(Cipher1399.sxor(block, prev_ciph), round)
+                    prev_ciph = self.process_block(Cipher1399.sxor(block, prev_ciph), round)
+                block = ""
+                i = 0
+            block += c
+            i += 1
+        test += self.process_block(block, round)
+        # print(len(test))
+        return test
+
     @staticmethod
     def get_left(text):
         # if it's odd, will get the left of the center excluding the center byte
@@ -229,11 +251,7 @@ class Cipher1399 :
             if (type == "ecb"):
                 new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
             elif type == "cbc":
-            	if round == 0:
-            		new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(right, round))
-            	else:
-            		new_right = Cipher1399.sxor(left, self.encrypt_string_ecb(self.prev_right, round))
-            	self.prev_right = new_right
+            	new_right = Cipher1399.sxor(left, self.encrypt_string_cbc(right, round))
             return self.feistel_encrypt_recursive(right, center, new_right, round + 1, type)
 
     def feistel_encrypt(self, text, type):
@@ -249,11 +267,7 @@ class Cipher1399 :
             if (type == "ecb"):
                 new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
             elif type == "cbc":
-            	if round != 0:
-            		new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(left, round))
-            	else:
-            		new_left = Cipher1399.sxor(right, self.encrypt_string_ecb(self.prev_left, round))
-            	self.prev_left = new_left
+            	new_left = Cipher1399.sxor(right, self.encrypt_string_cbc(left, round))
             elif type == "cfb":
             	pass
             elif type == "ofb":
@@ -281,15 +295,15 @@ print(ciph.number_of_iter)
 # print(Cipher1399.get_left("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_right("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
 # print(Cipher1399.get_center("qwertyuiopasdfghjklzxcvbnmmnbvcxzlkjhgfdsapoiuytrew"))
-plain = "Red: These walls are funny. First you hate 'em, then you get used to 'em. Enough time passes, you get so you depend on them. That's institutionalized.\nHeywood: Shit. I could never get like that.\nErnie: Oh yeah? Say that when you been here as long as Brooks has.\nRed: Goddamn right. They send you here for life, and that's exactly what they take. The part that counts, anyway"
+plain = "Red: These walls are funny. First you hate 'em, then you get used to 'em. Enough time passes, you get so you depend on them. That's institutionalized.\nHeywood: Shit. I could never get like that.\nErnie: Oh yeah? Say that when you been here as long as Brooks has.\nRed: Goddamn right. They send you here for life, and that's exactly what they take. The part that counts, anyway."
 plain1 = "qwertyuiopasdfghjklzxcvbnm qazwsxedcrfvtgbyhnujmikolp mnbvcxzlkjhgfdsapoiuytrewq abcdefghijklmnopqrstuvwxyz"
-print((len(plain)-3)/26)
+# print((len(plain)-3)/26)
 print(plain)
 # Cipher1399.print_as_hex(plain)
 # print(ciph.feistel_encrypt(plain, "ecb"))
-simpen = ciph.feistel_encrypt(plain, "ecb")
+simpen = ciph.feistel_encrypt(plain, "cbc")
 print("")
 print("")
 # Cipher1399.print_as_hex(simpen)
 print(simpen)
-# print(ciph.feistel_decrypt(simpen, "ecb"))
+print(ciph.feistel_decrypt(simpen, "cbc"))
